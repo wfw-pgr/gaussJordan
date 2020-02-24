@@ -6,7 +6,7 @@ program main
   implicit none
   character(100)  , parameter   :: AmatFile = 'dat/Amat.dat'
   character(100)  , parameter   :: BmatFile = 'dat/Bmat.dat'
-  double precision, allocatable :: Amat(:,:), Bmat(:,:)
+  double precision, allocatable :: Amat(:,:), Bmat(:,:), Cmat(:,:)
   integer                       :: i, j, nSize
   integer         , parameter   :: lun = 50
 
@@ -15,9 +15,10 @@ program main
   ! ------------------------------------- !
   open(lun,file=trim(AmatFile),status='old',form='formatted')
   read(lun,*) nSize, nSize
-  allocate( Amat(nSize,nSize), Bmat(nSize,nSize) )
+  allocate( Amat(nSize,nSize), Bmat(nSize,nSize), Cmat(nSize,nSize) )
   Amat(:,:) = 0.d0
   Bmat(:,:) = 0.d0
+  Cmat(:,:) = 0.d0
   do i=1, nSize
      read(lun,*) Amat(i,:)
   enddo
@@ -29,7 +30,7 @@ program main
   call gaussJordan( Amat, Bmat, nSize )
   
   ! ------------------------------------- !
-  ! --- [3] Answer Check              --- !
+  ! --- [3] save Results              --- !
   ! ------------------------------------- !
   open(lun,file=trim(BmatFile),status='replace',form='formatted')
   write(lun,*) nSize
@@ -37,6 +38,20 @@ program main
      write(lun,*) Bmat(i,:)
   enddo
   close(lun)
+  ! ------------------------------------- !
+  ! --- [4] confirm results           --- !
+  ! ------------------------------------- !
+  write(6,*)
+  write(6,*) 'A | A^{-1}'
+  do i=1, nSize
+     write(6,*) Amat(i,:), ' | ', Bmat(i,:)
+  enddo
+  write(6,*)
+  write(6,*) 'A A^{-1} must be E (unit Matrix)'
+  Cmat = matmul( Amat, Bmat )
+  do i=1, nSize
+     write(6,*) Cmat(i,:)
+  enddo
   
   return
 end program main

@@ -1,5 +1,5 @@
 ! ====================================================== !
-! === Gauss Jordan Method :: partial pivoting ver.   === !
+! === Gauss Jordan Method :: no pivoting ver.        === !
 ! ====================================================== !
 module gausJordaMod
 contains
@@ -12,8 +12,8 @@ contains
     integer         , intent(in)  :: nSize
     double precision, intent(in)  :: Amat(nSize,nSize)
     double precision, intent(out) :: Bmat(nSize,nSize)
-    integer                       :: i, j, k, ipivot
-    double precision              :: Dinv, Dval, vpivot, buff
+    integer                       :: i, j, k
+    double precision              :: Dinv, Dval
     double precision, parameter   :: eps = 1.d-10
     double precision, allocatable :: Umat(:,:)
 
@@ -42,39 +42,19 @@ contains
     ! --- [2] Upper Triangular Matrization  --- !
     ! ----------------------------------------- !
     do k=1, nSize
-       !  -- [2-1] Partial pivot selection   -- !
-       vpivot = abs( Umat(k,k) )
-       ipivot = k
-       do j=k+1, nSize
-          if ( abs( Umat(j,k) ).gt.vpivot ) then
-             vpivot = abs( Umat(j,k) )
-             ipivot = j
-          endif
-       end do
-       if ( ipivot.ne.k ) then
-          do j=k, nSize
-             buff           = Umat(ipivot,j)
-             Umat(ipivot,j) = Umat(k     ,j)
-             Umat(k     ,j) = buff
-          enddo
-          do j=1, nSize
-             buff           = Bmat(ipivot,j)
-             Bmat(ipivot,j) = Bmat(k     ,j)
-             Bmat(k     ,j) = buff
-          enddo
-       end if
-       !  -- [2-2] Singular Matrix Detection -- !
+              
+       !  -- [2-1] Singular Matrix Detection -- !
        if ( abs( Umat(k,k) ).lt.eps ) then
           write(6,*) '[gaussElimin] Amat :: Singular Matrix :: No Solution End :: @ k= ', k
           stop
        endif
-       !  -- [2-3] For pivot row            --  !
+       !  -- [2-2] For pivot row            --  !
        !  --      a'(k,:) = a(k,:) / a(k,k) --  !
        Dinv                = 1.d0 / Umat(k,k)
        Umat(k,k)           = 1.d0
        Umat(k,(k+1):nSize) = Dinv * Umat(k,(k+1):nSize)
        Bmat(k,    1:nSize) = Dinv * Bmat(k,    1:nSize)
-       !  -- [2-4] For Non-pivot row        --  !
+       !  -- [2-3] For Non-pivot row        --  !
        !  --      a'(j,:) = a(j,:) - a(j,k) * a(k,:) --  !
        do j=1, nSize
           if ( j.ne.k ) then
